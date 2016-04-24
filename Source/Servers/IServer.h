@@ -18,6 +18,7 @@ struct IServer
     virtual bool onWriterequest(const char *Databuffer, const size_t Datalength) = 0;
 
     // Server information in an easy to expand union.
+    #pragma pack(push, 1)
     union
     {
         struct
@@ -25,10 +26,11 @@ struct IServer
             char Hostname[64];
             uint8_t Hostinfo[16];
             uint64_t Hostaddress;
-            uint32_t Extendedserver;
+            uint8_t Extendedserver;
         } Segmented;
         char Raw[128];
     } Serverinfo;
+    #pragma pack(pop)
 
     // Construct the server from a hostname.
     IServer()
