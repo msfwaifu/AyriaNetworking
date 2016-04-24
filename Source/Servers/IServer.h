@@ -62,7 +62,7 @@ struct IServerEx : public IServer
     virtual void onConnect(const size_t Socket, const uint16_t Port) = 0;
     virtual bool onReadrequestEx(const size_t Socket, char *Databuffer, size_t *Datalength) = 0;
     virtual bool onWriterequestEx(const size_t Socket, const char *Databuffer, const size_t Datalength) = 0;
-    virtual bool onSocketstatus(int32_t *Readcount, size_t *Readsockets, int32_t *Writecount, size_t *Writesockets) = 0;
+    virtual bool onSocketstatus(size_t *Readcount, size_t *Readsockets, size_t *Writecount, size_t *Writesockets) = 0;
 
     // Construct the server from a hostname.
     IServerEx() : IServer()
