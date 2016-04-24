@@ -17,7 +17,7 @@ struct IServerinfo
     char Hostname[64];
     uint8_t Hostinfo[16];
     uint64_t Hostaddress;
-    uint8_t Extendedserver;
+    bool Extendedserver;
 };
 #pragma pack(pop)
 
