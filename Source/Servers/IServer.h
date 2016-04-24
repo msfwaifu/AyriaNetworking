@@ -10,6 +10,17 @@
 #pragma once
 #include <Configuration\All.h>
 
+// Server-information that can be extended in other classes.
+#pragma pack(push, 1)
+struct IServerinfo
+{
+    char Hostname[64];
+    uint8_t Hostinfo[16];
+    uint64_t Hostaddress;
+    uint8_t Extendedserver;
+};
+#pragma pack(pop)
+
 // The simple interface, implement everything yourself.
 struct IServer
 {
@@ -17,37 +28,29 @@ struct IServer
     virtual bool onReadrequest(char *Databuffer, size_t *Datalength) = 0;
     virtual bool onWriterequest(const char *Databuffer, const size_t Datalength) = 0;
 
-    // Server information in an easy to expand union.
-    #pragma pack(push, 1)
-    union
+    // Server information in a raw format.
+    uint8_t Serverinfo[128];
+    IServerinfo *GetServerinfo()
     {
-        struct
-        {
-            char Hostname[64];
-            uint8_t Hostinfo[16];
-            uint64_t Hostaddress;
-            uint8_t Extendedserver;
-        } Segmented;
-        char Raw[128];
-    } Serverinfo;
-    #pragma pack(pop)
+        return (IServerinfo *)Serverinfo;
+    }
 
     // Construct the server from a hostname.
     IServer()
     {
         // Clear the serverinfo and set the correct interface.
-        std::memset(Serverinfo.Raw, 0, sizeof(Serverinfo));
-        Serverinfo.Segmented.Extendedserver = 0;
+        std::memset(Serverinfo, 0, sizeof(Serverinfo));
+        GetServerinfo()->Extendedserver = 0;
     }
     IServer(const char *Hostname)
     {
         // Clear the serverinfo and set the correct interface.
-        std::memset(Serverinfo.Raw, 0, sizeof(Serverinfo));
-        Serverinfo.Segmented.Extendedserver = 0;
+        std::memset(Serverinfo, 0, sizeof(Serverinfo));
+        GetServerinfo()->Extendedserver = 0;
 
         // Copy the host information and address.
-        std::strncpy(Serverinfo.Segmented.Hostname, Hostname, 63);
-        Serverinfo.Segmented.Hostaddress = FNV1a_Runtime_64(Hostname, std::strlen(Hostname));
+        std::strncpy(GetServerinfo()->Hostname, Hostname, 63);
+        GetServerinfo()->Hostaddress = FNV1a_Runtime_64(Hostname, std::strlen(Hostname));
     }
 };
 
@@ -65,11 +68,11 @@ struct IServerEx : public IServer
     IServerEx() : IServer()
     {
         // Set the info to extended mode.
-        Serverinfo.Segmented.Extendedserver = 1;
+        GetServerinfo()->Extendedserver = 1;
     }
     IServerEx(const char *Hostname) : IServer(Hostname)
     {
         // Set the info to extended mode.
-        Serverinfo.Segmented.Extendedserver = 1;
+        GetServerinfo()->Extendedserver = 1;
     }
 };
