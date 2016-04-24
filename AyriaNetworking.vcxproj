@@ -189,6 +189,7 @@
     <ClInclude Include="Source\Configuration\Macros.h" />
     <ClInclude Include="Source\Configuration\Warnings.h" />
     <ClInclude Include="Source\Servers\IServer.h" />
+    <ClInclude Include="Source\Servers\ITCPServer.h" />
     <ClInclude Include="Source\Utilities\All.h" />
     <ClInclude Include="Source\Utilities\Binarymodification\Hooks\Hooking.h" />
     <ClInclude Include="Source\Utilities\Buffers\Bytebuffer.h" />
