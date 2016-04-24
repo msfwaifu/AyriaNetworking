@@ -14,3 +14,4 @@
 #include "Strings\Debugstring.h"
 #include "Buffers\Bytebuffer.h"
 #include "Files\Filesystem.h"
+#include "Files\CSVManager.h"
