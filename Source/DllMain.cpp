@@ -6,6 +6,8 @@
         The entrypoint for this extension.
 */
 
+#include <Networkmodules\Moduleloader.h>
+#include <Networkhandlers\Winsock.h>
 #include <Configuration\All.h>
 #include <cstdarg>
 
@@ -17,6 +19,12 @@ extern "C"
     }
     EXPORT_ATTR void __cdecl onInitializationStart(void)
     {
+        // Initialize the Networkhandlers.
+        Winsock::Initializehandler();
+        // TODO(Convery): Add the rest of the handlers.
+
+        // Load all modules from the config.csv.
+        Networkmodules::LoadAll();
     }
     EXPORT_ATTR void __cdecl onInitializationComplete(void)
     {

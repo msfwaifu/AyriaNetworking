@@ -193,6 +193,7 @@
     <ClInclude Include="Source\Configuration\Macros.h" />
     <ClInclude Include="Source\Configuration\Warnings.h" />
     <ClInclude Include="Source\Networkhandlers\Winsock.h" />
+    <ClInclude Include="Source\Networkmodules\Moduleloader.h" />
     <ClInclude Include="Source\Servers\IServer.h" />
     <ClInclude Include="Source\Servers\ITCPServer.h" />
     <ClInclude Include="Source\Servers\IUDPServer.h" />
@@ -201,6 +202,7 @@
     <ClInclude Include="Source\Utilities\Binarymodification\ImportAddressTable.h" />
     <ClInclude Include="Source\Utilities\Buffers\Bytebuffer.h" />
     <ClInclude Include="Source\Utilities\Cryptography\Hashing\FNV1.h" />
+    <ClInclude Include="Source\Utilities\Files\CSVManager.h" />
     <ClInclude Include="Source\Utilities\Files\Filesystem.h" />
     <ClInclude Include="Source\Utilities\Strings\Debugstring.h" />
     <ClInclude Include="Source\Utilities\Strings\Variadicstring.h" />
@@ -208,8 +210,10 @@
   <ItemGroup>
     <ClCompile Include="Source\DllMain.cpp" />
     <ClCompile Include="Source\Networkhandlers\Winsock.cpp" />
+    <ClCompile Include="Source\Networkmodules\PEModules.cpp" />
     <ClCompile Include="Source\Utilities\Binarymodification\ImportAddressTable.cpp" />
     <ClCompile Include="Source\Utilities\Buffers\Bytebuffer.cpp" />
+    <ClCompile Include="Source\Utilities\Files\CSVManager.cpp" />
     <ClCompile Include="Source\Utilities\Files\Filesystem.cpp" />
     <ClCompile Include="Source\Utilities\Strings\Debugstring.cpp" />
     <ClCompile Include="Source\Utilities\Strings\Variadicstring.cpp" />
