@@ -119,6 +119,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EntryPointSymbol>
       </EntryPointSymbol>
+      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>if "$(ComputerName)" == "H08" (call $(ProjectDir)Copy.bat)</Command>
@@ -138,6 +139,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EntryPointSymbol>
       </EntryPointSymbol>
+      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>if "$(ComputerName)" == "H08" (call $(ProjectDir)Copy.bat)</Command>
@@ -158,6 +160,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EntryPointSymbol>
       </EntryPointSymbol>
+      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>if "$(ComputerName)" == "H08" (call $(ProjectDir)Copy.bat)</Command>
@@ -178,6 +181,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EntryPointSymbol>
       </EntryPointSymbol>
+      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>if "$(ComputerName)" == "H08" (call $(ProjectDir)Copy.bat)</Command>
@@ -188,11 +192,13 @@
     <ClInclude Include="Source\Configuration\Defines.h" />
     <ClInclude Include="Source\Configuration\Macros.h" />
     <ClInclude Include="Source\Configuration\Warnings.h" />
+    <ClInclude Include="Source\Networkhandlers\Winsock.h" />
     <ClInclude Include="Source\Servers\IServer.h" />
     <ClInclude Include="Source\Servers\ITCPServer.h" />
     <ClInclude Include="Source\Servers\IUDPServer.h" />
     <ClInclude Include="Source\Utilities\All.h" />
     <ClInclude Include="Source\Utilities\Binarymodification\Hooks\Hooking.h" />
+    <ClInclude Include="Source\Utilities\Binarymodification\ImportAddressTable.h" />
     <ClInclude Include="Source\Utilities\Buffers\Bytebuffer.h" />
     <ClInclude Include="Source\Utilities\Cryptography\Hashing\FNV1.h" />
     <ClInclude Include="Source\Utilities\Files\Filesystem.h" />
@@ -201,6 +207,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\DllMain.cpp" />
+    <ClCompile Include="Source\Networkhandlers\Winsock.cpp" />
+    <ClCompile Include="Source\Utilities\Binarymodification\ImportAddressTable.cpp" />
     <ClCompile Include="Source\Utilities\Buffers\Bytebuffer.cpp" />
     <ClCompile Include="Source\Utilities\Files\Filesystem.cpp" />
     <ClCompile Include="Source\Utilities\Strings\Debugstring.cpp" />
