@@ -16,7 +16,7 @@ struct IServerinfo
 {
     char Hostname[64];
     uint8_t Hostinfo[16];
-    uint64_t Hostaddress;
+    uint32_t Hostaddress;
     bool Extendedserver;
 };
 #pragma pack(pop)
@@ -50,7 +50,7 @@ struct IServer
 
         // Copy the host information and address.
         std::strncpy(GetServerinfo()->Hostname, Hostname, 63);
-        GetServerinfo()->Hostaddress = FNV1a_Runtime_64(Hostname, std::strlen(Hostname));
+        GetServerinfo()->Hostaddress = FNV1a_Runtime_32(Hostname, std::strlen(Hostname));
     }
 };
 
