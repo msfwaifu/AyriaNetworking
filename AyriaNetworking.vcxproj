@@ -191,9 +191,6 @@
     <ClCompile Include="Source\Utilities\Strings\Debugstring.cpp" />
     <ClCompile Include="Source\Utilities\Strings\Variadicstring.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="AyriaNetworking.licenseheader" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
