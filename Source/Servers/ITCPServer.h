@@ -79,11 +79,6 @@ struct ITCPServer : public IServerEx
 
         return true;
     }
-    virtual bool onSocketstatus(size_t *Readcount, size_t *Readsockets, size_t *Writecount, size_t *Writesockets)
-    {
-        // We do not work with sockets in this version.
-        return false;
-    }
 
     // Callback and methods to insert data.
     virtual void Senddata(std::string &Databuffer)
