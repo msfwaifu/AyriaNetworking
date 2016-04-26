@@ -33,6 +33,8 @@ struct ITCPServer : public IServerEx
     virtual void onDisconnect(const size_t Socket)
     {
         GetServerinfo()->Connected = false;
+        Incomingstream.clear();
+        Outgoingstream.clear();
     }
     virtual void onConnect(const size_t Socket, const uint16_t Port)
     {

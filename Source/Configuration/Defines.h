@@ -42,7 +42,7 @@
 
 // Logging functions save to dir and duplicate to stdout.
 #define LOGFILEDIR ".\\Plugins\\Logs\\"
-#define DEBUGTOSTREAM
+//#define DEBUGTOSTREAM
 
 // The extension name that will be used throughout the application.
 #define EXTENSIONNAME "AyriaNetworking"
