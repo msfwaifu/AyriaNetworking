@@ -172,13 +172,35 @@ namespace WSReplacement
         {
             IServerEx *ServerEx = (IServerEx *)Server;
 
-            while(false == ServerEx->onReadrequestEx(Socket, Buffer, &BytesReceived) && true == Blockingmap[Socket])
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            if (true == Blockingmap[Socket])
+            {
+                while(false == ServerEx->onReadrequestEx(Socket, Buffer, &BytesReceived))
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            }
+            else
+            {
+                if (false == ServerEx->onReadrequestEx(Socket, Buffer, &BytesReceived))
+                {
+                    WSASetLastError(WSAEWOULDBLOCK);
+                    return int32_t(-1);
+                }
+            }            
         }
         else
         {
-            while(false == Server->onReadrequest(Buffer, &BytesReceived) && true == Blockingmap[Socket])
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            if (true == Blockingmap[Socket])
+            {
+                while(false == Server->onReadrequest(Buffer, &BytesReceived))
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            }
+            else
+            {
+                if (false == Server->onReadrequest(Buffer, &BytesReceived))
+                {
+                    WSASetLastError(WSAEWOULDBLOCK);
+                    return int32_t(-1);
+                }
+            } 
         }
 
         return std::min(BytesReceived, size_t(INT32_MAX));
@@ -198,13 +220,35 @@ namespace WSReplacement
         {
             IServerEx *ServerEx = (IServerEx *)Server;
 
-            while(false == ServerEx->onReadrequestEx(Socket, Buffer, &BytesReceived) && true == Blockingmap[Socket])
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            if (true == Blockingmap[Socket])
+            {
+                while(false == ServerEx->onReadrequestEx(Socket, Buffer, &BytesReceived))
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            }
+            else
+            {
+                if (false == ServerEx->onReadrequestEx(Socket, Buffer, &BytesReceived))
+                {
+                    WSASetLastError(WSAEWOULDBLOCK);
+                    return int32_t(-1);
+                }
+            }            
         }
         else
         {
-            while(false == Server->onReadrequest(Buffer, &BytesReceived) && true == Blockingmap[Socket])
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            if (true == Blockingmap[Socket])
+            {
+                while(false == Server->onReadrequest(Buffer, &BytesReceived))
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            }
+            else
+            {
+                if (false == Server->onReadrequest(Buffer, &BytesReceived))
+                {
+                    WSASetLastError(WSAEWOULDBLOCK);
+                    return int32_t(-1);
+                }
+            } 
         }
 
         // Set the host information from previous call.
