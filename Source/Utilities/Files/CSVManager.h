@@ -17,4 +17,3 @@ struct CSVManager
     static std::string Getvalue(size_t Row, size_t Col);
     static std::vector<std::vector<std::string>> EntryBuffer;
 };
-
