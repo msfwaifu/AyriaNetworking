@@ -49,13 +49,13 @@ namespace Networkmodules
                     break;
 
                 // Find the correct module for the entry.
-                for each (INetworkmodule Module in Modulelist)
+                for(auto Iterator = Modulelist.begin(); Iterator != Modulelist.end(); ++Iterator)
                 {
-                    if (std::strstr(Module.Modulename, CSVManager::Getvalue(i, 0).c_str()))
+                    if (std::strstr(Iterator->Modulename, CSVManager::Getvalue(i, 0).c_str()))
                     {
-                        IServer *Instance = Module.GetServerinstance(CSVManager::Getvalue(i, 1).c_str());
+                        IServer *Instance = Iterator->GetServerinstance(CSVManager::Getvalue(i, 1).c_str());
                         if (Instance)
-                            Module.Instances.push_back(Instance);
+                            Iterator->Instances.push_back(Instance);
                         else
                             DebugPrint(va("Extension missing for handler \"%s\" with hostname \"%s\"", CSVManager::Getvalue(i, 0).c_str(), CSVManager::Getvalue(i, 1).c_str()));
                         break;
