@@ -213,7 +213,7 @@ namespace WSReplacement
         // Find the server if we have one or pass to winsock.
         Server = FindBySocket(Socket);
         if (!Server) 
-            return recv(Socket, Buffer, BufferLength, Flags);
+            return recvfrom(Socket, Buffer, BufferLength, Flags, Peer, PeerLength);
 
         // While blocking, wait until we have data to send.
         if (Server->GetServerinfo()->Extendedserver)
@@ -316,7 +316,7 @@ namespace WSReplacement
                 Server = FindByAddress(uint32_t(((sockaddr_in *)Peer)->sin_addr.S_un.S_addr));
         }
         if (!Server) 
-            return send(Socket, Buffer, BufferLength, Flags);
+            return sendto(Socket, Buffer, BufferLength, Flags, Peer, PeerLength);
 
         // Add the socket to the map and save the host info.
         Socketmap[Socket] = Server;
