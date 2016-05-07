@@ -343,8 +343,8 @@ namespace WSReplacement
         IServer *Server;
 
         // Find the server if we have one.
-        Server = FindByAddress(uint32_t(inet_addr(Hostname)));
-        if (!Server) Server = FindByName(Hostname);
+        Server = FindByName(Hostname);        
+        if (!Server) Server = FindByAddress(uint32_t(inet_addr(Hostname)));
         if (!Server)
         {
             static hostent *ResolvedHost = nullptr;
@@ -374,6 +374,82 @@ namespace WSReplacement
         NetworkPrint(va("%s: \"%s\" -> %s", __func__, Hostname, inet_ntoa(LocalAddress)));
         return LocalHost;
     }
+    int32_t __stdcall GetAddressinfo(const char *Nodename, const char *Servicename, const ADDRINFOA *Hints, ADDRINFOA **Result)
+    {
+        IServer *Server;
+
+        // Resolve the host using the windows function.
+        if (0 == getaddrinfo(Nodename, Servicename, Hints, Result))
+        {
+            // Replace the address with ours if needed.
+            Server = FindByName(Nodename);
+            if (!Server) Server = FindByAddress(uint32_t(inet_addr(Nodename)));
+            if (Server)
+            {
+                for (ADDRINFOA *ptr = *Result; ptr != NULL; ptr = ptr->ai_next)
+                {
+                    // We only handle IPv4 for now.
+                    if (ptr->ai_family == AF_INET)
+                    {
+                        ((sockaddr_in *)ptr->ai_addr)->sin_addr.S_un.S_addr = Server->GetServerinfo()->Hostaddress;
+                    }
+                }
+            }
+
+            return 0;
+        }
+
+        // If resolving fails, we just have to make our own.
+        Server = FindByName(Nodename);
+        if (!Server) Server = FindByAddress(uint32_t(inet_addr(Nodename)));
+        if (Server)
+        {
+            *Result = new ADDRINFOA();
+
+            (*Result)->ai_family = AF_INET;
+            ((sockaddr_in *)(*Result)->ai_addr)->sin_addr.S_un.S_addr = Server->GetServerinfo()->Hostaddress;
+            return 0;
+        }
+
+        WSASetLastError(WSAHOST_NOT_FOUND);
+        return -1;
+    }
+    int32_t __stdcall GetPeername(size_t Socket, sockaddr *Name, int32_t *Namelength)
+    {
+        IServer *Server;
+        sockaddr_in *Localname = (sockaddr_in *)Name;
+
+        // If it's our socket, return IPv4.
+        Server = FindBySocket(Socket);
+        if (Server)
+        {
+            Localname->sin_family = AF_INET;
+            Localname->sin_port = 0;
+            Localname->sin_addr.S_un.S_addr = Server->GetServerinfo()->Hostaddress;
+            *Namelength = sizeof(sockaddr_in);
+            return 0;
+        }
+        
+        return getpeername(Socket, Name, Namelength);
+    }
+    int32_t __stdcall GetSockname(size_t Socket, sockaddr *Name, int32_t *Namelength)
+    {
+        IServer *Server;
+        sockaddr_in *Localname = (sockaddr_in *)Name;
+
+        // If it's our socket, return IPv4.
+        Server = FindBySocket(Socket);
+        if (Server)
+        {
+            Localname->sin_family = AF_INET;
+            Localname->sin_port = 0;
+            Localname->sin_addr.S_un.S_addr = Server->GetServerinfo()->Hostaddress;
+            *Namelength = sizeof(sockaddr_in);
+            return 0;
+        }
+
+        return getsockname(Socket, Name, Namelength);
+    }
 }
 #endif // _WIN32
 
@@ -398,6 +474,9 @@ namespace Winsock
         PATCH_WINSOCK_IAT("send", WSReplacement::Send);
         PATCH_WINSOCK_IAT("sendto", WSReplacement::SendTo);
         PATCH_WINSOCK_IAT("gethostbyname", WSReplacement::GetHostByName);
+        PATCH_WINSOCK_IAT("getaddrinfo", WSReplacement::GetAddressinfo);
+        PATCH_WINSOCK_IAT("getpeername", WSReplacement::GetPeername);  
+        PATCH_WINSOCK_IAT("getsockname", WSReplacement::GetSockname);  
     }
     void Registerserver(IServer *Server)
     {
