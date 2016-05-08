@@ -450,6 +450,41 @@ namespace WSReplacement
 
         return getsockname(Socket, Name, Namelength);
     }
+
+    int32_t __stdcall Shutdown(size_t Socket, size_t How)
+    {
+        IServer *Server;        
+
+        // Disconnect the server.
+        Server = FindBySocket(Socket);
+        if (Server)
+        {
+            Socketmap.erase(Socket);
+            if (Server->GetServerinfo()->Extendedserver)
+                ((IServerEx *)Server)->onDisconnect(Socket);
+        }
+
+        // Disconnect the actual socket.
+        shutdown(Socket, How);
+        return 0;
+    }
+    int32_t __stdcall Closesocket(size_t Socket)
+    {
+        IServer *Server;        
+
+        // Disconnect the server.
+        Server = FindBySocket(Socket);
+        if (Server)
+        {
+            Socketmap.erase(Socket);
+            if (Server->GetServerinfo()->Extendedserver)
+                ((IServerEx *)Server)->onDisconnect(Socket);
+        }
+
+        // Disconnect the actual socket.
+        closesocket(Socket);
+        return 0;
+    }
 }
 #endif // _WIN32
 
@@ -458,7 +493,7 @@ namespace Winsock
     void Initializehandler()
     {
         #define PATCH_WINSOCK_IAT(Export, Function)                 \
-        Address = GetIATFunction("wsock32.dll", Export);     \
+        Address = GetIATFunction("wsock32.dll", Export);            \
         if(Address) *(size_t *)Address = size_t(Function);          \
         else Address = GetIATFunction("WS2_32.dll", Export);        \
         if(Address) *(size_t *)Address = size_t(Function);          \
@@ -477,6 +512,8 @@ namespace Winsock
         PATCH_WINSOCK_IAT("getaddrinfo", WSReplacement::GetAddressinfo);
         PATCH_WINSOCK_IAT("getpeername", WSReplacement::GetPeername);  
         PATCH_WINSOCK_IAT("getsockname", WSReplacement::GetSockname);  
+        PATCH_WINSOCK_IAT("shutdown", WSReplacement::Shutdown);  
+        PATCH_WINSOCK_IAT("closesocket", WSReplacement::Closesocket);  
     }
     void Registerserver(IServer *Server)
     {
