@@ -22,9 +22,9 @@ namespace Networkmodules
 
     void LoadAll()
     {
-        // Before loading, set the DllDirectory to resolve any dependencies.
-        SetDllDirectoryA("./Plugins/Networkingmodules/");
-        AddDllDirectory(L"./Plugins/Networkingmodules/");
+        // Before loading, import some common DLLs if available.
+        LoadLibraryA("./Plugins/Networkingmodules/libeay32.dll");
+        LoadLibraryA("./Plugins/Networkingmodules/ssleay32.dll");        
 
         std::vector<std::string> Modulefiles;
         Filesystem::Searchdir("./Plugins/Networkingmodules/", &Modulefiles, "dll");

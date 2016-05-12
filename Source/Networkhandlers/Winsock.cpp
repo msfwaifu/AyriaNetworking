@@ -512,6 +512,7 @@ namespace Winsock
         PATCH_WINSOCK_IAT("getaddrinfo", WSReplacement::GetAddressinfo);
         PATCH_WINSOCK_IAT("getpeername", WSReplacement::GetPeername);  
         PATCH_WINSOCK_IAT("getsockname", WSReplacement::GetSockname);  
+
         PATCH_WINSOCK_IAT("shutdown", WSReplacement::Shutdown);  
         PATCH_WINSOCK_IAT("closesocket", WSReplacement::Closesocket);  
     }
