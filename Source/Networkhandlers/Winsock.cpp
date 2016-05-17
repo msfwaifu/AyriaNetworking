@@ -106,12 +106,18 @@ namespace WSReplacement
             Server = FindByAddress(*(uint32_t *) ((sockaddr_in6 *)Address)->sin6_addr.u.Byte);
             inet_ntop(AF_INET6, &((sockaddr_in6 *)Address)->sin6_addr, PlainAddress, INET6_ADDRSTRLEN);
             Port = ntohs(((sockaddr_in6 *)Address)->sin6_port);
+
+            // Last chance for IP-hostnames.
+            if (!Server) Server = FindByName(PlainAddress);
         }
         else
         {
             Server = FindByAddress(uint32_t(((sockaddr_in *)Address)->sin_addr.S_un.S_addr));
             inet_ntop(AF_INET, &((sockaddr_in *)Address)->sin_addr, PlainAddress, INET6_ADDRSTRLEN);
             Port = ntohs(((sockaddr_in *)Address)->sin_port);
+
+            // Last chance for IP-hostnames.
+            if (!Server) Server = FindByName(PlainAddress);
         }
 
         // Debug info.
@@ -381,6 +387,7 @@ namespace WSReplacement
         // Resolve the host using the windows function.
         if (0 == getaddrinfo(Nodename, Servicename, Hints, Result))
         {
+
             // Replace the address with ours if needed.
             Server = FindByName(Nodename);
             if (!Server) Server = FindByAddress(uint32_t(inet_addr(Nodename)));
@@ -391,6 +398,7 @@ namespace WSReplacement
                     // We only handle IPv4 for now.
                     if (ptr->ai_family == AF_INET)
                     {
+                        NetworkPrint(va("%s: \"%s\" -> %s", __func__, Nodename, inet_ntoa(((sockaddr_in *)ptr->ai_addr)->sin_addr)));
                         ((sockaddr_in *)ptr->ai_addr)->sin_addr.S_un.S_addr = Server->GetServerinfo()->Hostaddress;
                     }
                 }
@@ -408,6 +416,7 @@ namespace WSReplacement
 
             (*Result)->ai_family = AF_INET;
             ((sockaddr_in *)(*Result)->ai_addr)->sin_addr.S_un.S_addr = Server->GetServerinfo()->Hostaddress;
+            NetworkPrint(va("%s: \"%s\" -> %s", __func__, Nodename, inet_ntoa(((sockaddr_in *)(*Result)->ai_addr)->sin_addr)));
             return 0;
         }
 
