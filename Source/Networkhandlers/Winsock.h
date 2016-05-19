@@ -14,4 +14,5 @@ namespace Winsock
 {
     void Initializehandler();
     void Registerserver(IServer *Server);
+    extern bool ProxyInternalrange;
 }

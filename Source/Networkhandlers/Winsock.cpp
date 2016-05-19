@@ -14,12 +14,12 @@
 #include <thread>
 
 // Maps over the sockets and servers.
-std::unordered_map<uint32_t /* Address */, IServer *> Servermap;
-std::unordered_map<size_t /* Socket */, IServer *> Socketmap;
-std::unordered_map<size_t /* Socket */, bool> Blockingmap;
+static std::unordered_map<uint32_t /* Address */, IServer *> Servermap;
+static std::unordered_map<size_t /* Socket */, IServer *> Socketmap;
+static std::unordered_map<size_t /* Socket */, bool> Blockingmap;
 
 // Simplified lookup methods.
-IServer *FindByAddress(const uint32_t Address)
+static IServer *FindByAddress(const uint32_t Address)
 {
     for(auto Iterator = Servermap.begin(); Iterator != Servermap.end(); ++Iterator)
         if(uint32_t(Iterator->first) == Address)
@@ -27,7 +27,7 @@ IServer *FindByAddress(const uint32_t Address)
 
     return nullptr;
 }
-IServer *FindBySocket(const size_t Socket)
+static IServer *FindBySocket(const size_t Socket)
 {
     auto Result = Socketmap.find(Socket);
     if(Result != Socketmap.end())
@@ -35,7 +35,7 @@ IServer *FindBySocket(const size_t Socket)
 
     return nullptr;
 }
-IServer *FindByName(std::string Hostname)
+static IServer *FindByName(std::string Hostname)
 {
     for (auto Iterator = Servermap.begin(); Iterator != Servermap.end(); ++Iterator)
         if (0 == std::strcmp(Iterator->second->GetServerinfo()->Hostname, Hostname.c_str()))
@@ -49,6 +49,24 @@ IServer *FindByName(std::string Hostname)
 #include <ws2tcpip.h>
 #undef min
 #undef max
+
+namespace Winsock
+{
+    bool ProxyInternalrange = false;
+
+    // Swap IPs for internal networking when needed, for IPv4 192.
+    void ReplaceAddress(sockaddr_in *Address)
+    {
+        if (!ProxyInternalrange)
+            return;
+
+        if (192 == *(uint8_t *)&Address->sin_addr.S_un.S_addr)
+            *(uint8_t *)&Address->sin_addr.S_un.S_addr = 240;
+        else
+            if (240 == *(uint8_t *)&Address->sin_addr.S_un.S_addr)
+                *(uint8_t *)&Address->sin_addr.S_un.S_addr = 192;
+    }
+}
 
 namespace WSReplacement
 {
@@ -126,6 +144,9 @@ namespace WSReplacement
         // Let winsock handle the request if we can't.
         if (!Server)
         {
+            if (Address->sa_family == AF_INET)
+                Winsock::ReplaceAddress((sockaddr_in *)Address);
+
             return connect(Socket, Address, AddressLength);
         }
 
@@ -134,6 +155,8 @@ namespace WSReplacement
         if (Server->GetServerinfo()->Extendedserver)
             ((IServerEx *)Server)->onConnect(Socket, Port);
 
+        // If it's a real server, we do connect the socket for addressinfo.
+        connect(Socket, Address, AddressLength);
         return 0;
     }
     int32_t __stdcall IOControlSocket(size_t Socket, uint32_t Command, u_long *ArgumentPointer)
@@ -218,8 +241,15 @@ namespace WSReplacement
 
         // Find the server if we have one or pass to winsock.
         Server = FindBySocket(Socket);
-        if (!Server) 
-            return recvfrom(Socket, Buffer, BufferLength, Flags, Peer, PeerLength);
+        if (!Server)
+        {
+            BytesReceived = recvfrom(Socket, Buffer, BufferLength, Flags, Peer, PeerLength);
+
+            if (Peer->sa_family == AF_INET)
+                Winsock::ReplaceAddress((sockaddr_in *)Peer);
+
+            return BytesReceived;
+        }
 
         // While blocking, wait until we have data to send.
         if (Server->GetServerinfo()->Extendedserver)
@@ -321,8 +351,13 @@ namespace WSReplacement
             else
                 Server = FindByAddress(uint32_t(((sockaddr_in *)Peer)->sin_addr.S_un.S_addr));
         }
-        if (!Server) 
+        if (!Server)
+        {
+            if (Peer->sa_family == AF_INET)
+                Winsock::ReplaceAddress((sockaddr_in *)Peer);
+
             return sendto(Socket, Buffer, BufferLength, Flags, Peer, PeerLength);
+        }            
 
         // Add the socket to the map and save the host info.
         Socketmap[Socket] = Server;

@@ -119,7 +119,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EntryPointSymbol>
       </EntryPointSymbol>
-      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib	;Wininet.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>if "$(ComputerName)" == "H08" (call $(ProjectDir)Copy.bat)</Command>
@@ -139,7 +139,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EntryPointSymbol>
       </EntryPointSymbol>
-      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib	;Wininet.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>if "$(ComputerName)" == "H08" (call $(ProjectDir)Copy.bat)</Command>
@@ -160,7 +160,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EntryPointSymbol>
       </EntryPointSymbol>
-      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib	;Wininet.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>if "$(ComputerName)" == "H08" (call $(ProjectDir)Copy.bat)</Command>
@@ -181,7 +181,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EntryPointSymbol>
       </EntryPointSymbol>
-      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib	;Wininet.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>if "$(ComputerName)" == "H08" (call $(ProjectDir)Copy.bat)</Command>
@@ -192,6 +192,7 @@
     <ClInclude Include="Source\Configuration\Defines.h" />
     <ClInclude Include="Source\Configuration\Macros.h" />
     <ClInclude Include="Source\Configuration\Warnings.h" />
+    <ClInclude Include="Source\Networkhandlers\Wininternet.h" />
     <ClInclude Include="Source\Networkhandlers\Winsock.h" />
     <ClInclude Include="Source\Networkmodules\Moduleloader.h" />
     <ClInclude Include="Source\Servers\IServer.h" />
@@ -209,6 +210,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\DllMain.cpp" />
+    <ClCompile Include="Source\Networkhandlers\Wininternet.cpp" />
     <ClCompile Include="Source\Networkhandlers\Winsock.cpp" />
     <ClCompile Include="Source\Networkmodules\PEModules.cpp" />
     <ClCompile Include="Source\Utilities\Binarymodification\ImportAddressTable.cpp" />

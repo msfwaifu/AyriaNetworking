@@ -7,6 +7,7 @@
 */
 
 #include <Networkmodules\Moduleloader.h>
+#include <Networkhandlers\Wininternet.h>
 #include <Networkhandlers\Winsock.h>
 #include <Configuration\All.h>
 #include <cstdarg>
@@ -21,6 +22,7 @@ extern "C"
     {
         // Initialize the Networkhandlers.
         Winsock::Initializehandler();
+        Wininternet::Initializehandler();
         // TODO(Convery): Add the rest of the handlers.
 
         // Load all modules from the config.csv.
@@ -37,10 +39,21 @@ extern "C"
         // Messages are a 32bit FNV1a hash of a string.
         switch (Message)
         {
+            case FNV1a_Compiletime_32("SetProxyOn"):
+            {
+                Winsock::ProxyInternalrange = true;
+                break;
+            }
+            case FNV1a_Compiletime_32("SetProxyOff"):
+            {
+                Winsock::ProxyInternalrange = false;
+                break;
+            }
 
-        case FNV1a_Compiletime_32("DefaultCase"):
-        default:
-            break;
+
+            case FNV1a_Compiletime_32("DefaultCase"):
+            default:
+                break;
         }
 
         va_end(Variadic);

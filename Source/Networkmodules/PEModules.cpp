@@ -10,6 +10,7 @@
 
 #include <Configuration\All.h>
 #include <Networkhandlers\Winsock.h>
+#include <Networkhandlers\Wininternet.h>
 #include <Networkmodules\Moduleloader.h>
 
 // PE only.
@@ -79,6 +80,7 @@ namespace Networkmodules
             for each (IServer *Instance in Module.Instances)
             {
                 Winsock::Registerserver(Instance);
+                Wininternet::Registerserver(Instance);
                 // TODO(Convery): Add more handlers here.
             }
         }
