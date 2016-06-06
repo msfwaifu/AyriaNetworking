@@ -109,7 +109,7 @@ namespace WSReplacement
         IServer *Server;        
         char PlainAddress[INET6_ADDRSTRLEN]{};
 
-        // Disconnect the server.
+        // Disconnect an existing server if the socket is in use.
         Server = FindBySocket(Socket);
         if (Server)
         {

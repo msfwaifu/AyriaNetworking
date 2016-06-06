@@ -4,12 +4,14 @@
     Started: 2016-5-19
     Notes:
         Replaces the WININET API exports.
+        HINTERNET handles can be treated as sockets.
 */
 
 #include <Networkhandlers\Wininternet.h>
 #include <Configuration\All.h>
 #include <Servers\IServer.h>
 #include <unordered_map>
+#include <WinSock2.h>
 
 // Maps over the sockets and servers.
 static std::unordered_map<uint32_t /* Address */, IServer *> Servermap;
@@ -49,51 +51,183 @@ namespace INETReplacement
 {
     BOOL __stdcall Closehandle(HINTERNET hInternet)
     {
+        IServer *Server;
+
+        // Find the server if we have one.
+        Server = FindBySocket(size_t(hInternet));
+        if (Server)
+        {
+            NetworkPrint(va("%s for server \"%s\"", __func__, Server->GetServerinfo()->Hostname));
+            Socketmap.erase(size_t(hInternet));
+
+            if (Server->GetServerinfo()->Extendedserver)
+                ((IServerEx *)Server)->onDisconnect(size_t(hInternet));
+        }
+
         return InternetCloseHandle(hInternet);
     }
     HINTERNET __stdcall Connect(HINTERNET hInternet, LPCSTR lpszServerName, INTERNET_PORT nServerPort, LPCSTR lpszUserName, LPCSTR lpszPassword, DWORD dwService, DWORD dwFlags, DWORD_PTR dwContext)
     {
+        IServer *Server;
+
+        // Log this event.
         DebugPrint(va("%s: %s:%i %s:%s", __FUNCTION__, lpszServerName, nServerPort, lpszUserName, lpszPassword));
-        return InternetConnectA(hInternet, lpszServerName, nServerPort, lpszUserName, lpszPassword, dwService, dwFlags, dwContext);
+
+        // Find the server in our list.
+        Server = FindByName(lpszServerName);
+        if(!Server) Server = FindByAddress(uint32_t(inet_addr(lpszServerName)));
+        if(!Server) return InternetConnectA(hInternet, lpszServerName, nServerPort, lpszUserName, lpszPassword, dwService, dwFlags, dwContext);
+
+        // Create a random socket and add it to the map.
+        size_t Socket;
+        do
+        {
+            Socket = std::rand();
+        } while (Socketmap.find(Socket) != Socketmap.end());
+        Socketmap[Socket] = Server;
+
+        // Notify the server about this connection.
+        if (Server->GetServerinfo()->Extendedserver)
+            ((IServerEx *)Server)->onConnect(Socket, nServerPort);
+
+        return HINTERNET(Socket);
     }
     BOOL __stdcall Writefile(HINTERNET hFile, LPCVOID lpBuffer, DWORD dwNumberOfBytesToWrite, LPDWORD lpdwNumberOfBytesWritten)
     {
-        MessageBoxA(0, __FUNCTION__, 0, 0);
-        return InternetWriteFile(hFile, lpBuffer, dwNumberOfBytesToWrite, lpdwNumberOfBytesWritten);
+        IServer *Server;
+        *lpdwNumberOfBytesWritten = 0;
+
+        // Find the server in our list.
+        Server = FindBySocket(size_t(hFile));
+        if (!Server)
+        {
+            // Log this event.
+            NetworkPrint(va("%s: Writing %u bytes on socket 0x%p", __FUNCTION__, dwNumberOfBytesToWrite, hFile));
+            return InternetWriteFile(hFile, lpBuffer, dwNumberOfBytesToWrite, lpdwNumberOfBytesWritten);
+        }
+
+        // Log this event.
+        NetworkPrint(va("%s: Writing %u bytes to \"%s\"", __FUNCTION__, dwNumberOfBytesToWrite, Server->GetServerinfo()->Hostname));
+
+        // Send the data to a server, this should always be handled.
+        if (Server->GetServerinfo()->Extendedserver)
+        {
+            IServerEx *Extended = (IServerEx *)Server;
+            if (false == Extended->onWriterequestEx(size_t(hFile), (const char *)lpBuffer, size_t(dwNumberOfBytesToWrite)))
+                return FALSE;
+        }
+        else
+        {
+            if (false == Server->onWriterequest((const char *)lpBuffer, size_t(dwNumberOfBytesToWrite)))
+                return FALSE;
+        }
+
+        *lpdwNumberOfBytesWritten = dwNumberOfBytesToWrite;
+        return TRUE;
     }
     HINTERNET __stdcall Openrequest(HINTERNET hConnect, LPCSTR lpszVerb, LPCSTR lpszObjectName, LPCSTR lpszVersion, LPCSTR lpszReferrer, LPCSTR *lplpszAcceptTypes, DWORD dwFlags, DWORD_PTR dwContext)
     {
-        DebugPrint(va("%s: %s %s %s", __FUNCTION__, lpszVerb, lpszObjectName, lpszReferrer));
-        return HttpOpenRequestA(hConnect, lpszVerb, lpszObjectName, lpszVersion, lpszReferrer, lplpszAcceptTypes, dwFlags, dwContext);
+        // Create a readable request.
+        std::string Request;
+        {
+            if (lpszVerb) Request.append(lpszVerb);
+            else Request.append("GET");
+            Request.append(" ");
+
+            Request.append(lpszObjectName);
+            Request.append(" ");
+
+            if (lpszVersion) Request.append(lpszVersion);
+            else Request.append("HTTP/1.1");
+            Request.append("\r\n");
+
+            if (lpszReferrer)
+            {
+                // Spelling as per rfc1945
+                Request.append("Referer: ");
+                Request.append(lpszReferrer);
+                Request.append("\r\n");
+            }
+
+            NetworkPrint(va("%s: %s", __FUNCTION__, Request.c_str()));
+        }
+
+        IServer *Server;
+        Server = FindBySocket(size_t(hConnect));
+        if (!Server) return HttpOpenRequestA(hConnect, lpszVerb, lpszObjectName, lpszVersion, lpszReferrer, lplpszAcceptTypes, dwFlags, dwContext);
+        
+        // We send the partial header directly to the server, they can decide how to deal with it.
+        if (Server->GetServerinfo()->Extendedserver)
+        {
+            IServerEx *Extended = (IServerEx *)Server;
+            if (false == Extended->onWriterequestEx(size_t(hConnect), Request.c_str(), Request.size()))
+                return NULL;
+        }
+        else
+        {
+            if (false == Server->onWriterequest(Request.c_str(), Request.size()))
+                return NULL;
+        }
+
+        return hConnect;
     }
     BOOL __stdcall AddRequestHeaders(HINTERNET hRequest, LPCSTR lpszHeaders, DWORD dwHeadersLength, DWORD dwModifiers)
     {
-        MessageBoxA(0, __FUNCTION__, 0, 0);
-        return HttpAddRequestHeadersA(hRequest, lpszHeaders, dwHeadersLength, dwModifiers);
+        // Create a readable string of the header.
+        std::string Header;
+        if (dwHeadersLength) Header.append(lpszHeaders, dwHeadersLength);
+        else Header.append(lpszHeaders);
+        NetworkPrint(va("%s: %s", __FUNCTION__, Header.c_str()));
+
+        IServer *Server;
+        Server = FindBySocket(size_t(hRequest));
+        if (!Server) return HttpAddRequestHeadersA(hRequest, lpszHeaders, dwHeadersLength, dwModifiers);
+
+        // We send the partial header directly to the server, they can decide how to deal with it.
+        if (Server->GetServerinfo()->Extendedserver)
+        {
+            IServerEx *Extended = (IServerEx *)Server;
+            if (false == Extended->onWriterequestEx(size_t(hRequest), Header.c_str(), Header.size()))
+                return FALSE;
+        }
+        else
+        {
+            if (false == Server->onWriterequest(Header.c_str(), Header.size()))
+                return FALSE;
+        }
+
+        return TRUE;
     }
     BOOL __stdcall SendRequestEx(HINTERNET hRequest, LPINTERNET_BUFFERSA lpBuffersIn, LPINTERNET_BUFFERSA lpBuffersOut, DWORD dwFlags, DWORD_PTR dwContext)
     {
-        MessageBoxA(0, __FUNCTION__, 0, 0);
-        return HttpSendRequestExA(hRequest, lpBuffersIn, lpBuffersOut, dwFlags, dwContext);
+        // As we send and receive the data when available, this function does nothing.
+        if (FindBySocket(size_t(hRequest))) return HttpSendRequestExA(hRequest, lpBuffersIn, lpBuffersOut, dwFlags, dwContext); 
+        else return TRUE;
     }
     BOOL __stdcall EndRequest(HINTERNET hRequest, LPINTERNET_BUFFERSA lpBuffersOut, DWORD dwFlags, DWORD_PTR dwContext)
     {
-        MessageBoxA(0, __FUNCTION__, 0, 0);
-        return HttpEndRequestA(hRequest, lpBuffersOut, dwFlags, dwContext);
+        if (lpBuffersOut)
+        {
+            SetLastError(ERROR_INVALID_PARAMETER);
+            return FALSE;
+        }
+
+        // As we send and receive the data when available, this function does nothing.
+        if (!FindBySocket(size_t(hRequest))) return HttpEndRequestA(hRequest, lpBuffersOut, dwFlags, dwContext);
+        else return TRUE;
     }
     BOOL __stdcall QueryInfo(HINTERNET hRequest, DWORD dwInfoLevel, LPVOID lpBuffer, LPDWORD lpdwBufferLength, LPDWORD lpdwIndex)
     {
-        MessageBoxA(0, __FUNCTION__, 0, 0);
-        return HttpQueryInfoA(hRequest, dwInfoLevel, lpBuffer, lpdwBufferLength, lpdwIndex);
+        // We don't track this data, when there's a need for it we can create a map.
+        if (!FindBySocket(size_t(hRequest))) return HttpQueryInfoA(hRequest, dwInfoLevel, lpBuffer, lpdwBufferLength, lpdwIndex);
+        else return TRUE;
     }
     DWORD __stdcall AttemptConnect(DWORD dwReserved)
     {
-        MessageBoxA(0, __FUNCTION__, 0, 0);
         return InternetAttemptConnect(dwReserved);
     }
     HINTERNET __stdcall Open(LPCSTR lpszAgent, DWORD dwAccessType, LPCSTR lpszProxy, LPCSTR lpszProxyBypass, DWORD dwFlags)
     {
-        MessageBoxA(0, __FUNCTION__, 0, 0);
         return InternetOpenA(lpszAgent, dwAccessType, lpszProxy, lpszProxyBypass, dwFlags);
     }
 }
