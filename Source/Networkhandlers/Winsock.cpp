@@ -422,7 +422,6 @@ namespace WSReplacement
         // Resolve the host using the windows function.
         if (0 == getaddrinfo(Nodename, Servicename, Hints, Result))
         {
-
             // Replace the address with ours if needed.
             Server = FindByName(Nodename);
             if (!Server) Server = FindByAddress(uint32_t(inet_addr(Nodename)));
@@ -433,12 +432,16 @@ namespace WSReplacement
                     // We only handle IPv4 for now.
                     if (ptr->ai_family == AF_INET)
                     {
-                        NetworkPrint(va("%s: \"%s\" -> %s", __func__, Nodename, inet_ntoa(((sockaddr_in *)ptr->ai_addr)->sin_addr)));
                         ((sockaddr_in *)ptr->ai_addr)->sin_addr.S_un.S_addr = Server->GetServerinfo()->Hostaddress;
+                        NetworkPrint(va("%s: \"%s\" -> %s", __func__, Nodename, inet_ntoa(((sockaddr_in *)ptr->ai_addr)->sin_addr)));                        
                     }
                 }
             }
-
+            else
+            {
+                NetworkPrint(va("%s: \"%s\" have no local handler and will not be handled by AyriaNetworking.", __func__, Nodename));
+            }
+            
             return 0;
         }
 
