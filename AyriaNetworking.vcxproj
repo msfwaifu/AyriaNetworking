@@ -122,7 +122,7 @@
       <AdditionalDependencies>ws2_32.lib	;Wininet.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>if "$(ComputerName)" == "H08" (call $(ProjectDir)Copy.bat)</Command>
+      <Command>if "$(ComputerName)" == "HEDGEHOME" (call $(ProjectDir)Copy.bat)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -142,7 +142,7 @@
       <AdditionalDependencies>ws2_32.lib	;Wininet.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>if "$(ComputerName)" == "H08" (call $(ProjectDir)Copy.bat)</Command>
+      <Command>if "$(ComputerName)" == "HEDGEHOME" (call $(ProjectDir)Copy.bat)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -163,7 +163,7 @@
       <AdditionalDependencies>ws2_32.lib	;Wininet.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>if "$(ComputerName)" == "H08" (call $(ProjectDir)Copy.bat)</Command>
+      <Command>if "$(ComputerName)" == "HEDGEHOME" (call $(ProjectDir)Copy.bat)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -184,7 +184,7 @@
       <AdditionalDependencies>ws2_32.lib	;Wininet.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>if "$(ComputerName)" == "H08" (call $(ProjectDir)Copy.bat)</Command>
+      <Command>if "$(ComputerName)" == "HEDGEHOME" (call $(ProjectDir)Copy.bat)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

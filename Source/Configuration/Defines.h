@@ -47,6 +47,9 @@
 // The extension name that will be used throughout the application.
 #define EXTENSIONNAME "AyriaNetworking"
 
+// Log wininternet but only send data to local servers.
+#define WININET_LOCALONLY
+
 // The authors on windows should be able to check basic ranges.
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN

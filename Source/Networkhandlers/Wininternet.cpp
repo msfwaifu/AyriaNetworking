@@ -103,7 +103,11 @@ namespace INETReplacement
         {
             // Log this event.
             NetworkPrint(va("%s: Writing %u bytes on socket 0x%p", __FUNCTION__, dwNumberOfBytesToWrite, hFile));
+#ifdef WININET_LOCALONLY
+            return TRUE;
+#else
             return InternetWriteFile(hFile, lpBuffer, dwNumberOfBytesToWrite, lpdwNumberOfBytesWritten);
+#endif
         }
 
         // Log this event.
@@ -154,7 +158,14 @@ namespace INETReplacement
 
         IServer *Server;
         Server = FindBySocket(size_t(hConnect));
-        if (!Server) return HttpOpenRequestA(hConnect, lpszVerb, lpszObjectName, lpszVersion, lpszReferrer, lplpszAcceptTypes, dwFlags, dwContext);
+        if (!Server)
+        {
+#ifdef WININET_LOCALONLY
+            return hConnect;
+#else
+            return HttpOpenRequestA(hConnect, lpszVerb, lpszObjectName, lpszVersion, lpszReferrer, lplpszAcceptTypes, dwFlags, dwContext);
+#endif
+        }
         
         // We send the partial header directly to the server, they can decide how to deal with it.
         if (Server->GetServerinfo()->Extendedserver)
@@ -201,7 +212,14 @@ namespace INETReplacement
     BOOL __stdcall SendRequestEx(HINTERNET hRequest, LPINTERNET_BUFFERSA lpBuffersIn, LPINTERNET_BUFFERSA lpBuffersOut, DWORD dwFlags, DWORD_PTR dwContext)
     {
         // As we send and receive the data when available, this function does nothing.
-        if (FindBySocket(size_t(hRequest))) return HttpSendRequestExA(hRequest, lpBuffersIn, lpBuffersOut, dwFlags, dwContext); 
+        if (FindBySocket(size_t(hRequest)))
+        {
+#ifdef WININET_LOCALONLY
+            return TRUE;
+#else
+            return HttpSendRequestExA(hRequest, lpBuffersIn, lpBuffersOut, dwFlags, dwContext);
+#endif
+        }
         else return TRUE;
     }
     BOOL __stdcall EndRequest(HINTERNET hRequest, LPINTERNET_BUFFERSA lpBuffersOut, DWORD dwFlags, DWORD_PTR dwContext)
@@ -213,13 +231,27 @@ namespace INETReplacement
         }
 
         // As we send and receive the data when available, this function does nothing.
-        if (!FindBySocket(size_t(hRequest))) return HttpEndRequestA(hRequest, lpBuffersOut, dwFlags, dwContext);
+        if (!FindBySocket(size_t(hRequest)))
+        {
+#ifdef WININET_LOCALONLY
+            return TRUE;
+#else
+            return HttpEndRequestA(hRequest, lpBuffersOut, dwFlags, dwContext);
+#endif
+        }
         else return TRUE;
     }
     BOOL __stdcall QueryInfo(HINTERNET hRequest, DWORD dwInfoLevel, LPVOID lpBuffer, LPDWORD lpdwBufferLength, LPDWORD lpdwIndex)
     {
         // We don't track this data, when there's a need for it we can create a map.
-        if (!FindBySocket(size_t(hRequest))) return HttpQueryInfoA(hRequest, dwInfoLevel, lpBuffer, lpdwBufferLength, lpdwIndex);
+        if (!FindBySocket(size_t(hRequest)))
+        {
+#ifdef WININET_LOCALONLY
+            return TRUE;
+#else
+            return HttpQueryInfoA(hRequest, dwInfoLevel, lpBuffer, lpdwBufferLength, lpdwIndex);
+#endif
+        }
         else return TRUE;
     }
     DWORD __stdcall AttemptConnect(DWORD dwReserved)
