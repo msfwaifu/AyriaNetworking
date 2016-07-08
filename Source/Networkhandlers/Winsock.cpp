@@ -450,11 +450,11 @@ namespace WSReplacement
         if (!Server) Server = FindByAddress(uint32_t(inet_addr(Nodename)));
         if (Server)
         {
-            *Result = new ADDRINFOA();
-
-            (*Result)->ai_family = AF_INET;
+            // Resolve a known address to allocate it properly and then change it.
+            getaddrinfo(va("127.0.0.1"), Servicename, Hints, Result);
             ((sockaddr_in *)(*Result)->ai_addr)->sin_addr.S_un.S_addr = Server->GetServerinfo()->Hostaddress;
             NetworkPrint(va("%s: \"%s\" -> %s", __func__, Nodename, inet_ntoa(((sockaddr_in *)(*Result)->ai_addr)->sin_addr)));
+
             return 0;
         }
 
