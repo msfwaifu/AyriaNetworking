@@ -66,10 +66,43 @@ namespace Winsock
             if (240 == *(uint8_t *)&Address->sin_addr.S_un.S_addr)
                 *(uint8_t *)&Address->sin_addr.S_un.S_addr = 192;
     }
+
+    // Stomphooked functions.
+    std::unordered_map<std::string, void *> Stomphooks;
 }
 
 namespace WSReplacement
 {
+    // Call the stomphook if needed.
+    #define CALLWSHOOK(Function, Result, ...)                                               \
+    auto _Pointer = Winsock::Stomphooks[__FUNCTION__];                                      \
+    if(_Pointer)                                                                            \
+    {                                                                                       \
+        auto _Function = ((StomphookEx<decltype(Function)> *)_Pointer)->Originalfunction;   \
+        ((StomphookEx<decltype(Function)> *)_Pointer)->Removehook();                        \
+        *Result = _Function(__VA_ARGS__);                                                   \
+        ((StomphookEx<decltype(Function)> *)_Pointer)->Reinstall();                         \
+    }                                                                                       \
+    else                                                                                    \
+    {                                                                                       \
+        *Result = Function(__VA_ARGS__);                                                    \
+    }                                                                                       \
+
+    #define CALLWSHOOKRAW(Function, ...)                                                    \
+    auto _Pointer = Winsock::Stomphooks[__FUNCTION__];                                      \
+    if(_Pointer)                                                                            \
+    {                                                                                       \
+        auto _Function = ((StomphookEx<decltype(Function)> *)_Pointer)->Originalfunction;   \
+        ((StomphookEx<decltype(Function)> *)_Pointer)->Removehook();                        \
+        _Function(__VA_ARGS__);                                                             \
+        ((StomphookEx<decltype(Function)> *)_Pointer)->Reinstall();                         \
+    }                                                                                       \
+    else                                                                                    \
+    {                                                                                       \
+        Function(__VA_ARGS__);                                                              \
+    }                                                                                       \
+
+
     int32_t __stdcall Bind(size_t Socket, const sockaddr *Address, int32_t AddressLength)
     {
         IServer *Server;
@@ -84,24 +117,9 @@ namespace WSReplacement
             return 0;
         }
 
-        return bind(Socket, Address, AddressLength);
-    }
-    int32_t __stdcall CloseSocket(size_t Socket)
-    {
-        IServer *Server;
-
-        // Find the server if we have one.
-        Server = FindBySocket(Socket);
-        if (Server)
-        {
-            NetworkPrint(va("%s for server \"%s\"", __func__, Server->GetServerinfo()->Hostname));
-            Socketmap.erase(Socket);
-
-            if (Server->GetServerinfo()->Extendedserver)
-                ((IServerEx *)Server)->onDisconnect(Socket);
-        }
-
-        return closesocket(Socket);
+        int32_t Result;
+        CALLWSHOOK(bind, &Result, Socket, Address, AddressLength);
+        return Result;
     }
     int32_t __stdcall Connect(size_t Socket, const sockaddr *Address, int32_t AddressLength)
     {
@@ -147,7 +165,9 @@ namespace WSReplacement
             if (Address->sa_family == AF_INET)
                 Winsock::ReplaceAddress((sockaddr_in *)Address);
 
-            return connect(Socket, Address, AddressLength);
+            int32_t Result;
+            CALLWSHOOK(connect, &Result, Socket, Address, AddressLength);
+            return Result;
         }
 
         // Add the socket to the map.
@@ -156,7 +176,7 @@ namespace WSReplacement
             ((IServerEx *)Server)->onConnect(Socket, Port);
 
         // If it's a real server, we do connect the socket for addressinfo.
-        connect(Socket, Address, AddressLength);
+        CALLWSHOOKRAW(connect, Socket, Address, AddressLength);
         return 0;
     }
     int32_t __stdcall IOControlSocket(size_t Socket, uint32_t Command, u_long *ArgumentPointer)
@@ -184,7 +204,10 @@ namespace WSReplacement
         }
 
         NetworkPrint(va("%s on socket 0x%X with command \"%s\"", __func__, Socket, ReadableCommand));
-        return ioctlsocket((SOCKET)Socket, Command, ArgumentPointer);
+
+        int32_t Result;
+        CALLWSHOOK(ioctlsocket, &Result, (SOCKET)Socket, Command, ArgumentPointer);
+        return Result;
     }
     int32_t __stdcall Receive(size_t Socket, char *Buffer, int32_t BufferLength, int32_t Flags)
     {
@@ -193,8 +216,11 @@ namespace WSReplacement
 
         // Find the server if we have one or pass to winsock.
         Server = FindBySocket(Socket);
-        if (!Server) 
-            return recv(Socket, Buffer, BufferLength, Flags);
+        if (!Server)
+        {
+            CALLWSHOOK(recv, &BytesReceived, Socket, Buffer, BufferLength, Flags);
+            return BytesReceived;
+        }
 
         // While blocking, wait until we have data to send.
         if (Server->GetServerinfo()->Extendedserver)
@@ -243,7 +269,7 @@ namespace WSReplacement
         Server = FindBySocket(Socket);
         if (!Server)
         {
-            BytesReceived = recvfrom(Socket, Buffer, BufferLength, Flags, Peer, PeerLength);
+            CALLWSHOOK(recvfrom, &BytesReceived, Socket, Buffer, BufferLength, Flags, Peer, PeerLength);
 
             if (Peer->sa_family == AF_INET)
                 Winsock::ReplaceAddress((sockaddr_in *)Peer);
@@ -298,7 +324,7 @@ namespace WSReplacement
         int32_t SocketCount;
 
         // Request socket info from winsock.
-        SocketCount = select(fdsCount, Readfds, Writefds, Exceptfds, Timeout);
+        CALLWSHOOK(select, &SocketCount, fdsCount, Readfds, Writefds, Exceptfds, Timeout);
         if (SocketCount == -1)
             SocketCount = 0;
 
@@ -320,8 +346,12 @@ namespace WSReplacement
 
         // Find the server if we have one or pass to winsock.
         Server = FindBySocket(Socket);
-        if (!Server) 
-            return send(Socket, Buffer, BufferLength, Flags);
+        if (!Server)
+        {
+            int32_t Result;
+            CALLWSHOOK(send, &Result, Socket, Buffer, BufferLength, Flags);
+            return Result;
+        }
 
         // Send the data to a server, this should always be handled.
         if (Server->GetServerinfo()->Extendedserver)
@@ -356,7 +386,9 @@ namespace WSReplacement
             if (Peer->sa_family == AF_INET)
                 Winsock::ReplaceAddress((sockaddr_in *)Peer);
 
-            return sendto(Socket, Buffer, BufferLength, Flags, Peer, PeerLength);
+            int32_t Result;            
+            CALLWSHOOK(sendto, &Result, Socket, Buffer, BufferLength, Flags, Peer, PeerLength);
+            return Result;
         }            
 
         // Add the socket to the map and save the host info.
@@ -388,8 +420,8 @@ namespace WSReplacement
         if (!Server) Server = FindByAddress(uint32_t(inet_addr(Hostname)));
         if (!Server)
         {
-            static hostent *ResolvedHost = nullptr;
-            ResolvedHost = gethostbyname(Hostname);
+            static hostent *ResolvedHost;
+            CALLWSHOOK(GetHostByName, &ResolvedHost, Hostname);
 
             // Debug information about winsocks result.
             if (ResolvedHost != nullptr)
@@ -420,7 +452,9 @@ namespace WSReplacement
         IServer *Server;
 
         // Resolve the host using the windows function.
-        if (0 == getaddrinfo(Nodename, Servicename, Hints, Result))
+        int32_t Callresult;
+        CALLWSHOOK(getaddrinfo, &Callresult, Nodename, Servicename, Hints, Result);
+        if (0 == Callresult)
         {
             // Replace the address with ours if needed.
             Server = FindByName(Nodename);
@@ -451,7 +485,7 @@ namespace WSReplacement
         if (Server)
         {
             // Resolve a known address to allocate it properly and then change it.
-            getaddrinfo(va("127.0.0.1"), Servicename, Hints, Result);
+            CALLWSHOOKRAW(getaddrinfo, va("127.0.0.1"), Servicename, Hints, Result);
             ((sockaddr_in *)(*Result)->ai_addr)->sin_addr.S_un.S_addr = Server->GetServerinfo()->Hostaddress;
             NetworkPrint(va("%s: \"%s\" -> %s", __func__, Nodename, inet_ntoa(((sockaddr_in *)(*Result)->ai_addr)->sin_addr)));
 
@@ -477,7 +511,9 @@ namespace WSReplacement
             return 0;
         }
         
-        return getpeername(Socket, Name, Namelength);
+        int32_t Result;
+        CALLWSHOOK(getpeername, &Result, Socket, Name, Namelength);
+        return Result;
     }
     int32_t __stdcall GetSockname(size_t Socket, sockaddr *Name, int32_t *Namelength)
     {
@@ -495,7 +531,9 @@ namespace WSReplacement
             return 0;
         }
 
-        return getsockname(Socket, Name, Namelength);
+        int32_t Result;
+        CALLWSHOOK(getsockname, &Result, Socket, Name, Namelength);
+        return Result;
     }
 
     int32_t __stdcall Shutdown(size_t Socket, size_t How)
@@ -512,7 +550,7 @@ namespace WSReplacement
         }
 
         // Disconnect the actual socket.
-        shutdown(Socket, How);
+        CALLWSHOOKRAW(shutdown, Socket, How);
         return 0;
     }
     int32_t __stdcall Closesocket(size_t Socket)
@@ -529,7 +567,7 @@ namespace WSReplacement
         }
 
         // Disconnect the actual socket.
-        closesocket(Socket);
+        CALLWSHOOKRAW(Closesocket, Socket);
         return 0;
     }
 }
@@ -539,29 +577,60 @@ namespace Winsock
 {
     void Initializehandler()
     {
-        #define PATCH_WINSOCK_IAT(Export, Function)                 \
-        Address = GetIATFunction("wsock32.dll", Export);            \
-        if(Address) *(size_t *)Address = size_t(Function);          \
-        else Address = GetIATFunction("WS2_32.dll", Export);        \
-        if(Address) *(size_t *)Address = size_t(Function);          \
-
         size_t Address;
-        PATCH_WINSOCK_IAT("bind", WSReplacement::Bind);
-        PATCH_WINSOCK_IAT("closesocket", WSReplacement::CloseSocket);
-        PATCH_WINSOCK_IAT("connect", WSReplacement::Connect);
-        PATCH_WINSOCK_IAT("ioctlsocket", WSReplacement::IOControlSocket);
-        PATCH_WINSOCK_IAT("recv", WSReplacement::Receive);
-        PATCH_WINSOCK_IAT("recvfrom", WSReplacement::ReceiveFrom);
-        PATCH_WINSOCK_IAT("select", WSReplacement::Select);
-        PATCH_WINSOCK_IAT("send", WSReplacement::Send);
-        PATCH_WINSOCK_IAT("sendto", WSReplacement::SendTo);
-        PATCH_WINSOCK_IAT("gethostbyname", WSReplacement::GetHostByName);
-        PATCH_WINSOCK_IAT("getaddrinfo", WSReplacement::GetAddressinfo);
-        PATCH_WINSOCK_IAT("getpeername", WSReplacement::GetPeername);  
-        PATCH_WINSOCK_IAT("getsockname", WSReplacement::GetSockname);  
 
-        PATCH_WINSOCK_IAT("shutdown", WSReplacement::Shutdown);  
-        PATCH_WINSOCK_IAT("closesocket", WSReplacement::Closesocket);  
+        #define PATCH_WINSOCK_IAT(Export, Function)                                                             \
+        Address = GetIATFunction("wsock32.dll", Export);                                                        \
+        if(Address) *(size_t *)Address = size_t(Function);                                                      \
+        else Address = GetIATFunction("WS2_32.dll", Export);                                                    \
+        if(Address) *(size_t *)Address = size_t(Function);                                                      \
+
+        #define PATCH_WINSOCK_STOMP(Export, Function)                                                           \
+        Address = (size_t)GetProcAddress(GetModuleHandleA("wsock32.dll"), Export);                              \
+        if (!Address) Address = (size_t)GetProcAddress(GetModuleHandleA("WS2_32.dll"), Export);                 \
+        if (Address)                                                                                            \
+        {                                                                                                       \
+            Stomphooks[#Function] = new StomphookEx<decltype(Function)>();                                      \
+            ((StomphookEx<decltype(Function)> *)Stomphooks[#Function])->Setfunctionaddress((void *)Address);    \
+            ((StomphookEx<decltype(Function)> *)Stomphooks[#Function])->Installhook((void *)Address, Function); \
+        }                                                                                                       \
+
+        // While stomp-hooking isn't necessarily exclusive with IAT hooking
+        // there's a performance impact for no benefit whatsoever.
+        if (std::strstr(GetCommandLineA(), "-ws_stomphook"))
+        {
+            PATCH_WINSOCK_STOMP("bind", WSReplacement::Bind);
+            PATCH_WINSOCK_STOMP("send", WSReplacement::Send);
+            PATCH_WINSOCK_STOMP("recv", WSReplacement::Receive);
+            PATCH_WINSOCK_STOMP("sendto", WSReplacement::SendTo);
+            PATCH_WINSOCK_STOMP("select", WSReplacement::Select);
+            PATCH_WINSOCK_STOMP("connect", WSReplacement::Connect);
+            PATCH_WINSOCK_STOMP("shutdown", WSReplacement::Shutdown);
+            PATCH_WINSOCK_STOMP("recvfrom", WSReplacement::ReceiveFrom);
+            PATCH_WINSOCK_STOMP("getpeername", WSReplacement::GetPeername);
+            PATCH_WINSOCK_STOMP("getsockname", WSReplacement::GetSockname);
+            PATCH_WINSOCK_STOMP("closesocket", WSReplacement::Closesocket);
+            PATCH_WINSOCK_STOMP("getaddrinfo", WSReplacement::GetAddressinfo);
+            PATCH_WINSOCK_STOMP("gethostbyname", WSReplacement::GetHostByName);
+            PATCH_WINSOCK_STOMP("ioctlsocket", WSReplacement::IOControlSocket);
+        }
+        else
+        {
+            PATCH_WINSOCK_IAT("bind", WSReplacement::Bind);
+            PATCH_WINSOCK_IAT("send", WSReplacement::Send);
+            PATCH_WINSOCK_IAT("recv", WSReplacement::Receive);
+            PATCH_WINSOCK_IAT("sendto", WSReplacement::SendTo);
+            PATCH_WINSOCK_IAT("select", WSReplacement::Select);
+            PATCH_WINSOCK_IAT("connect", WSReplacement::Connect);
+            PATCH_WINSOCK_IAT("shutdown", WSReplacement::Shutdown);
+            PATCH_WINSOCK_IAT("recvfrom", WSReplacement::ReceiveFrom);
+            PATCH_WINSOCK_IAT("getpeername", WSReplacement::GetPeername);
+            PATCH_WINSOCK_IAT("getsockname", WSReplacement::GetSockname);
+            PATCH_WINSOCK_IAT("closesocket", WSReplacement::Closesocket);
+            PATCH_WINSOCK_IAT("getaddrinfo", WSReplacement::GetAddressinfo);
+            PATCH_WINSOCK_IAT("gethostbyname", WSReplacement::GetHostByName);
+            PATCH_WINSOCK_IAT("ioctlsocket", WSReplacement::IOControlSocket);
+        }
     }
     void Registerserver(IServer *Server)
     {
