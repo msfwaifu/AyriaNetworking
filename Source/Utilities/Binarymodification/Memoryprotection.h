@@ -3,7 +3,7 @@
     License: LGPL 3.0
     Started: 2016-9-10
     Notes:
-		Adds or removes protection from a range of pages.
+        Adds or removes protection from a range of pages.
 */
 
 #pragma once

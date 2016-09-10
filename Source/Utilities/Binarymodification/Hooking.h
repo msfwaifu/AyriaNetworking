@@ -3,7 +3,7 @@
     License: LGPL 3.0
     Started: 2016-9-10
     Notes:
-		Some basic hooking support.
+        Some basic hooking support.
 */
 
 #pragma once
