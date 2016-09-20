@@ -15,7 +15,7 @@ template <typename Functionsignature, typename ...Arguments>    \
 struct Basehook ##Ex : public Basehook                          \
 {                                                               \
     std::function<Functionsignature> Originalfunction;          \
-    void Setfunctionaddress(void *Address = nullptr)      \
+    void Setfunctionaddress(void *Address = nullptr)            \
     {                                                           \
         if (!Address) Address = s_Location;                     \
         Originalfunction = *(Functionsignature *)Address;       \
