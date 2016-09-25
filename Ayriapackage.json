@@ -1,0 +1,17 @@
+{
+    "pluginname": "AyriaNetworking",
+    "plugindescription": "Provides a base for network emulation.",
+    "pluginversion": "0.1.4",
+    "pluginupdated": "2016-09-25",
+    "plugindependencies": [],
+
+    "authorname": "Convery", 
+    "authorsite": "https://ayria.se",
+    "authorfingerprint": "B153 276A F28C B769 D3A1 73B0 2277 3DC2 7DF0 5D97",
+
+    "displayname": "AyriaNetworking",
+    "displaythumbnail": "",
+
+    "searchtags": ["network", "emulation", "base", "official"],
+    "games": [ { "platform": "native", "games": ["*"] } ]
+}

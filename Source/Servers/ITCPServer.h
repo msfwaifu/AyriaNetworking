@@ -14,7 +14,6 @@
 #include <algorithm>
 #include <mutex>
 
-
 // Server-information that can be extended in other classes.
 #pragma pack(push, 1)
 struct ITCPServerinfo : public IServerinfo
