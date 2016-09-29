@@ -421,7 +421,7 @@ namespace WSReplacement
         if (!Server)
         {
             static hostent *ResolvedHost;
-            CALLWSHOOK(GetHostByName, &ResolvedHost, Hostname);
+            CALLWSHOOK(gethostbyname, &ResolvedHost, Hostname);
 
             // Debug information about winsocks result.
             if (ResolvedHost != nullptr)
@@ -567,7 +567,7 @@ namespace WSReplacement
         }
 
         // Disconnect the actual socket.
-        CALLWSHOOKRAW(Closesocket, Socket);
+        CALLWSHOOKRAW(closesocket, Socket);
         return 0;
     }
 }
