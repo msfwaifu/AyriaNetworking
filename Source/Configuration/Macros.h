@@ -15,6 +15,7 @@
 #define PrintFunction()
 #define DebugPrint(string)
 #define InfoPrint(string)
+#define NetworkPrint(string)
 #else
 #define PrintFunction() AppendToLogfile(__FUNCTION__, "Call to")
 #define DebugPrint(string) AppendToLogfile(string, "Debug")
