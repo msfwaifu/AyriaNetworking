@@ -39,12 +39,12 @@ extern "C"
         // Messages are a 32bit FNV1a hash of a string.
         switch (Message)
         {
-            case FNV1a_Compiletime_32("SetProxyOn"):
+            case FNV1a_Compiletime_32("AyriaNetworking_SetProxyOn"):
             {
                 Winsock::ProxyInternalrange = true;
                 break;
             }
-            case FNV1a_Compiletime_32("SetProxyOff"):
+            case FNV1a_Compiletime_32("AyriaNetworking_SetProxyOff"):
             {
                 Winsock::ProxyInternalrange = false;
                 break;
