@@ -41,7 +41,7 @@
 #endif
 
 // Logging functions save to dir and duplicate to stdout.
-#define LOGFILEDIR ".\\Plugins\\Logs\\"
+#define LOGFILEDIR "./Plugins/Logs/"
 //#define DEBUGTOSTREAM
 
 // The extension name that will be used throughout the application.

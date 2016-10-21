@@ -24,15 +24,15 @@ namespace Networkmodules
     void LoadAll()
     {
         // Before loading, import some common DLLs if available.
-        LoadLibraryA("./Plugins/Networkingmodules/libeay32.dll");
-        LoadLibraryA("./Plugins/Networkingmodules/ssleay32.dll");        
+        LoadLibraryA("./Plugins/AyriaNetworking/Networkingmodules/libeay32.dll");
+        LoadLibraryA("./Plugins/AyriaNetworking/Networkingmodules/ssleay32.dll");        
 
         std::vector<std::string> Modulefiles;
-        Filesystem::Searchdir("./Plugins/Networkingmodules/", &Modulefiles, "dll");
+        Filesystem::Searchdir("./Plugins/AyriaNetworking/Networkingmodules/", &Modulefiles, "dll");
         for each (std::string Module in Modulefiles)
         {
             // Load each module into process memory.
-            HMODULE Library = LoadLibraryA(va_small("./Plugins/Networkingmodules/%s", Module.c_str()));
+            HMODULE Library = LoadLibraryA(va_small("./Plugins/AyriaNetworking/Networkingmodules/%s", Module.c_str()));
             if (Library)
             {
                 INetworkmodule Newmodule;
@@ -45,7 +45,7 @@ namespace Networkmodules
         }
 
         // Read the configuration files.
-        if (true == CSVManager::Readfile("./Plugins/Networkingmodules/Configuration.csv"))
+        if (true == CSVManager::Readfile("./Plugins/AyriaNetworking/Networkingmodules/Configuration.csv"))
         {
             for (size_t i = 0; ; ++i)
             {
@@ -70,7 +70,7 @@ namespace Networkmodules
         }
         else
         {
-            DebugPrint("Failed to load \"./Plugins/Networkingmodules/Configuration.csv\", verify that you have one.");
+            DebugPrint("Failed to load \"./Plugins/AyriaNetworking/Networkingmodules/Configuration.csv\", verify that you have one.");
             return;
         }
 
