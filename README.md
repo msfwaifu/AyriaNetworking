@@ -11,3 +11,15 @@ This plugin is intended to simplify network emulation by intercepting calls to t
 ## Plugin loading
 
 The plugin should, like all other plugins, be placed in the games `./Plugins/` directory where it gets loaded by the [Bootstrap](https://github.com/AyriaPublic/NativeBootstrap) module which is injected into the game by the desktop client. It requires a `Configuration.csv` file in `./Plugins/AyriaNetworking/Networkingmodules` along with the [NetworkModules](https://github.com/AyriaPublic/Networkmodule_Template) themselves. The `./Plugins/AyriaNetworking/Networkingstorage` directory is reserved for the [NetworkModules](https://github.com/AyriaPublic/Networkmodule_Template) data.
+
+## Configuration.csv example
+
+```
+# Layout: Modulename,Hostname
+
+# Exampleserver that redirects localhost lookups.
+MyModule.dll,localhost
+MyModule.dll,127.0.0.1
+
+# End of file.
+```
