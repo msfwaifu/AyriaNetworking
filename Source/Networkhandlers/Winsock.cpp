@@ -430,11 +430,11 @@ namespace WSReplacement
             return ResolvedHost;
         }
 
-        // Create the local address.
-        static in_addr LocalAddress;
-        static in_addr *LocalSocketAddrList[2];
-        LocalAddress.S_un.S_addr = Server->GetServerinfo()->Hostaddress;
-        LocalSocketAddrList[0] = &LocalAddress;
+        // Create the address struct.
+        in_addr *LocalAddress = new in_addr();
+        in_addr *LocalSocketAddrList[2];
+        LocalAddress->S_un.S_addr = Server->GetServerinfo()->Hostaddress;
+        LocalSocketAddrList[0] = LocalAddress;
         LocalSocketAddrList[1] = nullptr;
 
         hostent *LocalHost = new hostent();
@@ -444,7 +444,7 @@ namespace WSReplacement
         LocalHost->h_name = const_cast<char *>(Hostname);        
         LocalHost->h_addr_list = (char **)LocalSocketAddrList;
 
-        NetworkPrint(va("%s: \"%s\" -> %s", __func__, Hostname, inet_ntoa(LocalAddress)));
+        NetworkPrint(va("%s: \"%s\" -> %s", __func__, Hostname, inet_ntoa(*LocalAddress)));
         return LocalHost;
     }
     int32_t __stdcall GetAddressinfo(const char *Nodename, const char *Servicename, const ADDRINFOA *Hints, ADDRINFOA **Result)
