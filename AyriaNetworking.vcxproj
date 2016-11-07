@@ -31,6 +31,7 @@
     <ClInclude Include="Source\Configuration\Defines.h" />
     <ClInclude Include="Source\Configuration\Macros.h" />
     <ClInclude Include="Source\Configuration\Warnings.h" />
+    <ClInclude Include="Source\Networkemulation\All.h" />
     <ClInclude Include="Source\Networkemulation\Structures\IServer.h" />
     <ClInclude Include="Source\STDInclude.h" />
     <ClInclude Include="Source\Utilities\All.h" />
