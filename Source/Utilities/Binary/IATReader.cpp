@@ -108,7 +108,7 @@ size_t PE_Findordinal(std::string Module, uint32_t Ordinal)
                 continue;
 
             auto OrdinalThunk = (PIMAGE_THUNK_DATA)((size_t)Imports[i].FirstThunk + (c * sizeof(IMAGE_THUNK_DATA)) + Imagebase);
-            size_t(&OrdinalThunk->u1.Function);
+            return size_t(&OrdinalThunk->u1.Function);
         }
     }
 

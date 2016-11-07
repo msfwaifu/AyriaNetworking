@@ -8,6 +8,7 @@
 */
 
 #pragma once
+#include <Configuration/Defines.h>
 #include <vector>
 #include <string>
 

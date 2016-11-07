@@ -178,7 +178,7 @@ bool AYRIA::FILE::Listrecursive(std::string Searchpath, std::vector<std::string>
 #include <direct.h>
 
 // msvc 14
-#if _MSC_VER >= 1900
+#if _MSC_VER >= 1900 && !defined(__clang__)
 #include <experimental\filesystem>
 
 uint32_t AYRIA::FILE::Modified(const char *Filepath)
