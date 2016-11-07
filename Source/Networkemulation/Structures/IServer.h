@@ -15,8 +15,8 @@
 #define VERSION_ISERVER             0
 #define VERSION_ISERVEREX           1
 #define VERSION_ISERVER_RESERVED1   2
-#define VERSION_ISERVER_RESERVED2   3
-#define VERSION_ISERVER_RESERVED3   4
+#define VERSION_ISERVER_RESERVED2   4
+#define VERSION_ISERVER_RESERVED3   8
 
 // The base server for single-socket connections.
 struct IServer
