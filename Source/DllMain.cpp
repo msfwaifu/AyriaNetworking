@@ -24,6 +24,9 @@ extern "C"
             This export is called when all other dlls and plugins have been loaded.
             It should be used to do your initialization and .text segment modifications.
         */
+
+        // Initialize the platform hooks.
+        Platform::Initialize_Winsock();
     }
     EXPORT_ATTR void __cdecl onInitializationComplete(void)
     {

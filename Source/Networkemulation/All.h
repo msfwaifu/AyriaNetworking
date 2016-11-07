@@ -10,3 +10,6 @@
 
 // Server types.
 #include "Structures/IServer.h"
+
+// Platform specific hooks.
+#include "Platformhook/All.h"

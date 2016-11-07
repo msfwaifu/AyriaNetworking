@@ -32,6 +32,7 @@
     <ClInclude Include="Source\Configuration\Macros.h" />
     <ClInclude Include="Source\Configuration\Warnings.h" />
     <ClInclude Include="Source\Networkemulation\All.h" />
+    <ClInclude Include="Source\Networkemulation\Platformhook\All.h" />
     <ClInclude Include="Source\Networkemulation\Structures\IDatagramserver.h" />
     <ClInclude Include="Source\Networkemulation\Structures\IServer.h" />
     <ClInclude Include="Source\Networkemulation\Structures\IStreamedserver.h" />
@@ -49,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\DllMain.cpp" />
+    <ClCompile Include="Source\Networkemulation\Platformhook\Winsock.cpp" />
     <ClCompile Include="Source\Utilities\Binary\Hooks.cpp" />
     <ClCompile Include="Source\Utilities\Binary\IATReader.cpp" />
     <ClCompile Include="Source\Utilities\Binary\Memprotect.cpp" />
