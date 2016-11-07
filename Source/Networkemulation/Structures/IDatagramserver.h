@@ -15,7 +15,6 @@
 // The serverversions defined in this module.
 #define ISERVER_DATAGRAM    32
 
-// The base server for multi-socket connections.
 struct IDatagramserver : public IServer
 {
     std::vector<std::vector<uint8_t>> Outgoingpackets;
