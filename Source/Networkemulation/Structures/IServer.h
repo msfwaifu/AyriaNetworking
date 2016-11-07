@@ -12,17 +12,17 @@
 #include <STDInclude.h>
 
 // The serverversions defined in this module.
-#define VERSION_ISERVER             0
-#define VERSION_ISERVEREX           1
-#define VERSION_ISERVER_RESERVED1   2
-#define VERSION_ISERVER_RESERVED2   4
-#define VERSION_ISERVER_RESERVED3   8
+#define ISERVER_BASE        0
+#define ISERVER_EXTENDED    1
+#define ISERVER_RESERVED1   2
+#define ISERVER_RESERVED2   4
+#define ISERVER_RESERVED3   8
 
 // The base server for single-socket connections.
 struct IServer
 {
     // Return the servers version.
-    virtual uint32_t Version() { return VERSION_ISERVER; };
+    virtual uint32_t Version() { return ISERVER_BASE; };
 
     // Returns false if there's no data or something went wrong.
     virtual bool onReadrequest(void *Databuffer, uint32_t *Datasize) = 0;
@@ -33,7 +33,7 @@ struct IServer
 struct IServerEx : public IServer
 {
     // Return the servers version.
-    virtual uint32_t Version() { return VERSION_ISERVEREX; };
+    virtual uint32_t Version() { return ISERVER_EXTENDED; };
 
     // Nullsub the base methods.
     virtual bool onReadrequest(void *Databuffer, uint32_t *Datasize) { (void)Databuffer; (void)Datasize; return false; };
