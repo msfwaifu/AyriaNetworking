@@ -32,9 +32,9 @@
     <ClInclude Include="Source\Configuration\Macros.h" />
     <ClInclude Include="Source\Configuration\Warnings.h" />
     <ClInclude Include="Source\Networkemulation\All.h" />
-    <ClInclude Include="Source\Networkemulation\Structures\IDatagramserver.h" />
+    <ClInclude Include="Source\Networkemulation\Structures\Datagramserver.h" />
     <ClInclude Include="Source\Networkemulation\Structures\IServer.h" />
-    <ClInclude Include="Source\Networkemulation\Structures\IStreamedserver.h" />
+    <ClInclude Include="Source\Networkemulation\Structures\Streamedserver.h" />
     <ClInclude Include="Source\STDInclude.h" />
     <ClInclude Include="Source\Utilities\All.h" />
     <ClInclude Include="Source\Utilities\Binary\Hooks.h" />
