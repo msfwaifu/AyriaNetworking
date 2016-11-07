@@ -15,7 +15,7 @@
 // The serverversions defined in this module.
 #define ISERVER_DATAGRAM    32
 
-struct Datagramserver : public IServer
+struct IDatagramserver : public IServer
 {
     std::vector<std::vector<uint8_t>> Outgoingpackets;
     std::mutex Bufferguard;

@@ -16,7 +16,7 @@
 // The serverversions defined in this module.
 #define ISERVER_STREAMED    16
 
-struct Streamedserver : public IServerEx
+struct IStreamedserver : public IServerEx
 {
     // The datastreams this server handles, per socket.
     std::unordered_map<size_t, std::vector<uint8_t>> Incomingstream;
@@ -128,7 +128,7 @@ struct Streamedserver : public IServerEx
         }
     }
     virtual void onStreamupdate(const size_t Socket, std::vector<uint8_t> &Stream) = 0;
-    static void onStreamupdatewrapper(Streamedserver *This, const size_t Socket)
+    static void onStreamupdatewrapper(IStreamedserver *This, const size_t Socket)
     {
         /*
             The user needs to unlock the mutex once they have removed
