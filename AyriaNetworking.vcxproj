@@ -18,6 +18,34 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Source\Configuration\All.h" />
+    <ClInclude Include="Source\Configuration\Defines.h" />
+    <ClInclude Include="Source\Configuration\Macros.h" />
+    <ClInclude Include="Source\Configuration\Warnings.h" />
+    <ClInclude Include="Source\STDInclude.h" />
+    <ClInclude Include="Source\Utilities\All.h" />
+    <ClInclude Include="Source\Utilities\Binary\Hooks.h" />
+    <ClInclude Include="Source\Utilities\Binary\IATReader.h" />
+    <ClInclude Include="Source\Utilities\Binary\Memprotect.h" />
+    <ClInclude Include="Source\Utilities\Crypto\FNV1.h" />
+    <ClInclude Include="Source\Utilities\Crypto\SMS4.h" />
+    <ClInclude Include="Source\Utilities\Files\CSVManager.h" />
+    <ClInclude Include="Source\Utilities\Files\Filesystem.h" />
+    <ClInclude Include="Source\Utilities\Strings\Debugstring.h" />
+    <ClInclude Include="Source\Utilities\Strings\Variadicstring.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\DllMain.cpp" />
+    <ClCompile Include="Source\Utilities\Binary\Hooks.cpp" />
+    <ClCompile Include="Source\Utilities\Binary\IATReader.cpp" />
+    <ClCompile Include="Source\Utilities\Binary\Memprotect.cpp" />
+    <ClCompile Include="Source\Utilities\Crypto\SMS4.cpp" />
+    <ClCompile Include="Source\Utilities\Files\CSVManager.cpp" />
+    <ClCompile Include="Source\Utilities\Files\Filesystem.cpp" />
+    <ClCompile Include="Source\Utilities\Strings\Debugstring.cpp" />
+    <ClCompile Include="Source\Utilities\Strings\Variadicstring.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C0B1A035-A035-4278-8D0E-6907F218D641}</ProjectGuid>
     <RootNamespace>Extension_template</RootNamespace>
